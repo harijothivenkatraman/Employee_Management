@@ -103,7 +103,7 @@ public class GlobalExceptionHandler {
         log.error("Unhandled exception occurred: ", ex);
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
-                "Internal Server Error",
+                ex.getMessage() != null ? ex.getMessage() : "Internal Server Error",
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 null
         );
