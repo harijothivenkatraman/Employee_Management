@@ -3,6 +3,8 @@ package com.hari.employeemanagement.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hari.employeemanagement.dto.EmployeeRequest;
 import com.hari.employeemanagement.dto.EmployeeResponse;
+import com.hari.employeemanagement.exception.ResourceNotFoundException;
+import com.hari.employeemanagement.security.JwtService;
 import com.hari.employeemanagement.service.EmployeeService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +14,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
@@ -38,17 +40,27 @@ class EmployeeControllerTest {
     private EmployeeService employeeService;
     
     @MockBean
-    private Object jwtService;
+    private JwtService jwtService;
     
     @MockBean
     private UserDetailsService userDetailsService;
 
-    @Test
-    void createEmployee_ReturnsCreated() throws Exception {
+    private EmployeeRequest createValidRequest() {
         EmployeeRequest request = new EmployeeRequest();
         request.setFirstName("John");
+        request.setLastName("Doe");
+        request.setEmail("john.doe@example.com");
+        request.setDepartment("Engineering");
+        request.setSalary(75000.0);
+        return request;
+    }
+
+    @Test
+    void createEmployee_ReturnsCreated() throws Exception {
+        EmployeeRequest request = createValidRequest();
         
-        when(employeeService.createEmployee(any(EmployeeRequest.class))).thenReturn(EmployeeResponse.builder().id(1L).build());
+        when(employeeService.createEmployee(any(EmployeeRequest.class)))
+                .thenReturn(EmployeeResponse.builder().id(1L).build());
 
         mockMvc.perform(post("/api/employees/")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -75,17 +87,18 @@ class EmployeeControllerTest {
 
     @Test
     void getEmployeeById_NotFound_Returns404() throws Exception {
-        when(employeeService.getEmployeeById(1L)).thenThrow(new RuntimeException("Not found"));
+        when(employeeService.getEmployeeById(1L)).thenThrow(new ResourceNotFoundException("Employee", "id", 1L));
 
         mockMvc.perform(get("/api/employees/1"))
-                .andExpect(status().isNotFound()); // Depending on global exception handler
+                .andExpect(status().isNotFound());
     }
 
     @Test
     void updateEmployee_ReturnsOk() throws Exception {
-        EmployeeRequest request = new EmployeeRequest();
+        EmployeeRequest request = createValidRequest();
         
-        when(employeeService.updateEmployee(eq(1L), any(EmployeeRequest.class))).thenReturn(EmployeeResponse.builder().id(1L).build());
+        when(employeeService.updateEmployee(eq(1L), any(EmployeeRequest.class)))
+                .thenReturn(EmployeeResponse.builder().id(1L).build());
 
         mockMvc.perform(put("/api/employees/1")
                 .contentType(MediaType.APPLICATION_JSON)

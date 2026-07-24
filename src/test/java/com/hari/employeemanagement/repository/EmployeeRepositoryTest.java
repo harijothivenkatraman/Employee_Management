@@ -18,15 +18,19 @@ class EmployeeRepositoryTest {
     @Autowired
     private EmployeeRepository employeeRepository;
 
-    @Test
-    void saveEmployee_Success() {
-        Employee employee = Employee.builder()
+    private Employee createSampleEmployee(String email) {
+        return Employee.builder()
                 .firstName("John")
                 .lastName("Doe")
-                .email("john@test.com")
-                .department("IT")
-                .salary(50000.0)
+                .email(email)
+                .department("Engineering")
+                .salary(75000.0)
                 .build();
+    }
+
+    @Test
+    void saveEmployee_Success() {
+        Employee employee = createSampleEmployee("john@test.com");
         
         Employee saved = employeeRepository.save(employee);
         
@@ -36,7 +40,7 @@ class EmployeeRepositoryTest {
 
     @Test
     void findById_Success() {
-        Employee employee = Employee.builder().email("test@test.com").build();
+        Employee employee = createSampleEmployee("test1@test.com");
         Employee saved = employeeRepository.save(employee);
         
         Optional<Employee> found = employeeRepository.findById(saved.getId());
@@ -45,24 +49,24 @@ class EmployeeRepositoryTest {
 
     @Test
     void findByEmail_Success() {
-        Employee employee = Employee.builder().email("test@test.com").build();
+        Employee employee = createSampleEmployee("test2@test.com");
         employeeRepository.save(employee);
         
-        Optional<Employee> found = employeeRepository.findByEmail("test@test.com");
+        Optional<Employee> found = employeeRepository.findByEmail("test2@test.com");
         assertTrue(found.isPresent());
     }
 
     @Test
     void existsByEmail_ReturnsTrue() {
-        Employee employee = Employee.builder().email("test@test.com").build();
+        Employee employee = createSampleEmployee("test3@test.com");
         employeeRepository.save(employee);
         
-        assertTrue(employeeRepository.existsByEmail("test@test.com"));
+        assertTrue(employeeRepository.existsByEmail("test3@test.com"));
     }
 
     @Test
     void searchEmployees_FindsByName() {
-        Employee employee = Employee.builder().firstName("John").lastName("Smith").email("test@test.com").build();
+        Employee employee = createSampleEmployee("test4@test.com");
         employeeRepository.save(employee);
         
         var result = employeeRepository.searchEmployees("John", PageRequest.of(0, 10));
@@ -71,7 +75,7 @@ class EmployeeRepositoryTest {
 
     @Test
     void deleteEmployee_Success() {
-        Employee employee = Employee.builder().email("test@test.com").build();
+        Employee employee = createSampleEmployee("test5@test.com");
         Employee saved = employeeRepository.save(employee);
         
         employeeRepository.deleteById(saved.getId());

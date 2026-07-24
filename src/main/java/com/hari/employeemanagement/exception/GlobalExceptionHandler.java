@@ -74,12 +74,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex) {
-        log.error("Bad credentials exception: {}", ex.getMessage());
+    @ExceptionHandler({BadCredentialsException.class, org.springframework.security.core.AuthenticationException.class})
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(Exception ex) {
+        log.error("Authentication exception: {}", ex.getMessage());
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
-                ex.getMessage(),
+                "Invalid username or password",
                 HttpStatus.UNAUTHORIZED.value(),
                 null
         );
